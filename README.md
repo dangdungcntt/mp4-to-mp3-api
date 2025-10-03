@@ -144,11 +144,6 @@ curl -X POST http://localhost:3000/api/convert \
    ffprobe test.mp3
    ```
 
-## Performance
-- **Memory**: ~80MB peak for a 100MB MP4 (streaming avoids buffering).
-- **Speed**: ~12s for 100MB file (varies by hardware).
-- **Disk**: 0MB (fully streaming).
-
 ## Limitations
 - Single-file uploads only (extend `formData.getAll('files')` for multiple).
 - No progress reporting (consider WebSockets for UX).
