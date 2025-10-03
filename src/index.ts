@@ -2,6 +2,7 @@ import ffmpeg from 'fluent-ffmpeg';
 import { Readable } from 'stream';
 
 const API_PATH = Bun.env.API_PATH || "/convert";
+const SIZE_LIMIT_BYTES = Number(Bun.env.SIZE_LIMIT_BYTES || 50 * 1024 * 1024);
 
 async function handleConvert(req: Request): Promise<Response> {
     try {
@@ -14,6 +15,10 @@ async function handleConvert(req: Request): Promise<Response> {
         const file = formData.get('file');
         if (!(file instanceof File) || !file.name.endsWith('.mp4')) {
             return new Response('Must upload an MP4 file', { status: 400 });
+        }
+
+        if (SIZE_LIMIT_BYTES > 0 && file.size > SIZE_LIMIT_BYTES) {
+            return new Response(`File too large (max ${SIZE_LIMIT_BYTES / 1024 / 1024}MB)`, { status: 413 });
         }
 
         const output = ffmpeg(Readable.from(file.stream()))
