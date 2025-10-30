@@ -31,6 +31,7 @@ async function handleConvert(req: Request): Promise<Response> {
             })
             .pipe();
 
+        // @ts-ignore
         return new Response(output, {
             status: 200,
             headers: {
@@ -47,24 +48,39 @@ async function handleConvert(req: Request): Promise<Response> {
     }
 }
 
+async function handleReq(req: Request): Promise<Response> {
+    const url = new URL(req.url);
+
+    if (url.pathname === '/' && req.method === 'GET') {
+        return new Response(`MP4 to MP3 API. POST ${API_PATH} with multipart/form-data file=your.mp4`, {
+            status: 200,
+            headers: { 'Content-Type': 'text/plain' },
+        });
+    }
+
+    if (url.pathname === API_PATH && req.method === 'POST') {
+        return handleConvert(req);
+    }
+
+    return new Response('Not Found', { status: 404, headers: { 'Content-Type': 'text/plain' } });
+}
+
 
 const server = Bun.serve({
     port: Bun.env.PORT || 3000,
     async fetch(req) {
-        const url = new URL(req.url);
-
-        if (url.pathname === '/' && req.method === 'GET') {
-            return new Response(`MP4 to MP3 API. POST ${API_PATH} with multipart/form-data file=your.mp4`, {
-                status: 200,
-                headers: { 'Content-Type': 'text/plain' },
-            });
+        const start = Date.now();
+        let status = 0
+        try {
+            const res = await handleReq(req);
+            status = res.status;
+            return res;
+        } finally {
+            const duration = Date.now() - start;
+            console.log(
+                `[${new Date().toISOString()}] ${req.method} ${req.url} - ${status > 0 ? status : '-'} ${duration}`
+            );
         }
-
-        if (url.pathname === API_PATH && req.method === 'POST') {
-            return handleConvert(req);
-        }
-
-        return new Response('Not Found', { status: 404, headers: { 'Content-Type': 'text/plain' } });
     },
 });
 
