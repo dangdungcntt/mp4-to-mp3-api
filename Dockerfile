@@ -1,8 +1,9 @@
+# Build stage
+FROM oven/bun:1-alpine AS builder
+
 LABEL maintainer="github.com/dangdungcntt"
 LABEL image="mp4-to-mp3-api"
 
-# Build stage
-FROM oven/bun:1-alpine AS builder
 WORKDIR /app
 COPY package.json bun.lock tsconfig.json ./
 RUN bun install --frozen-lockfile
